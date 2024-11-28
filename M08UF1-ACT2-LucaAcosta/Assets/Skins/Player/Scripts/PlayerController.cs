@@ -1,83 +1,64 @@
+using DG.Tweening;
 using Unity.Android.Gradle.Manifest;
 using UnityEngine;
+using UnityEngine.InputSystem;
 
 public class PlayerController : MonoBehaviour
 {
-    [Header("Movimiento de Avance")]
-    [SerializeField] public float velocidadPlayer; // Vfwd
-    [SerializeField] public float incrementoVelocidad; //dV
-    [SerializeField] public float velocidadMaxima; 
-    [SerializeField] public float velocidadMinima;
+    [SerializeField] public float forwardAcceleration = 1f;
+    [SerializeField] public float maxForwardVelocity = 10f;
+    [SerializeField] public float minForwardVelocity = 10f;
+    [SerializeField] public float verticalVelocityOnGrounded = -1f;
 
-    [Header("Movimiento vertical")]
-    [SerializeField] public float velocidadVertical; //Vvert
-    [SerializeField] public float gravedad = -9.81f;
-    
-    public bool isGrounded;
+    [SerializeField] InputActionReference punch;
+    [SerializeField] HitCollider hitColliderPunch;
 
-    private Rigidbody rb;
+    float forwardVelocity = 0f;
+    float verticalVelocity = 0f;
+    float gravity = -9.8f;
 
-    void Start()
+    CharacterController characterController;
+    private void Awake()
     {
-        isGrounded = false;
-        rb = GetComponent<Rigidbody>();
+        characterController = GetComponent<CharacterController>();
     }
-
-    void Update()
+    private void OnEnable()
     {
-        HandleForwardMovement();
-        HandleVerticalMovement();
+        punch.action.Enable();
+        punch.action.performed += OnPunch;
     }
-
-    private void HandleForwardMovement()
+    private void Update()
     {
-        if (velocidadPlayer < velocidadMinima)
+        if(forwardVelocity < minForwardVelocity)
         {
-            velocidadPlayer = velocidadMinima;
+            forwardVelocity += forwardAcceleration * Time.deltaTime;
         }
 
-        Vector3 forwardMovement = transform.forward * velocidadPlayer * Time.deltaTime;
-        rb.MovePosition(rb.position + forwardMovement);
-    }
-
-    public void IncreaseForwardSpeed()
-    {
-        velocidadPlayer = Mathf.Min(velocidadPlayer + incrementoVelocidad, velocidadMaxima);
-    }
-
-    public void HalveForwardSpeed()
-    {
-        velocidadPlayer /= 2f;
-    }
-
-    private void HandleVerticalMovement()
-    {
-        if (!isGrounded)
-        {
-            velocidadVertical += gravedad * Time.deltaTime;
+        if (forwardVelocity > maxForwardVelocity)
+        { 
+            forwardVelocity = maxForwardVelocity; 
         }
 
-        Vector3 verticalMovement = new Vector3(0, velocidadVertical * Time.deltaTime, 0);
-        rb.MovePosition(rb.position + verticalMovement);
-    }
+        characterController.Move((Vector3.forward * forwardVelocity + Vector3.up * verticalVelocity) * Time.deltaTime);
 
-    public void SetVerticalSpeed(float newVerticalSpeed)
-    {
-        velocidadVertical = newVerticalSpeed;
-    }
-
-    private void OnCollisionEnter(Collision collision)
-    {
-        if (collision.contacts[0].point.y <= transform.position.y)
+        if(characterController.isGrounded)
         {
-            isGrounded = true;
-            velocidadVertical = 0f; 
+            verticalVelocity = verticalVelocityOnGrounded;
         }
+
+        verticalVelocity += gravity * Time.deltaTime;
     }
 
-    private void OnCollisionExit(Collision collision)
+    private void OnDisable()
     {
-        isGrounded = false;
+        punch.action.Disable();
+        punch.action.performed -= OnPunch;
     }
 
+    private void OnPunch(InputAction.CallbackContext callbackContext)
+    {
+        hitColliderPunch.gameObject.SetActive(true);
+        DOVirtual.DelayedCall(0.5f, 
+            () => hitColliderPunch.gameObject.SetActive(false));
+    }
 }
