@@ -3,7 +3,7 @@ using UnityEngine;
 public class ScenarioGenerator : MonoBehaviour
 {
     static public ScenarioGenerator instance;
-    [SerializeField] int numPiecesTogenerateOnStart = 4;
+    [SerializeField] int numPiecesToGenerateOnStart = 4;
     [SerializeField] GameObject[] piecesPrefabs;
 
     [Header("Debug")]
@@ -29,7 +29,7 @@ public class ScenarioGenerator : MonoBehaviour
     }
     private void Start()
     {
-        for (int i = 0; i < numPiecesTogenerateOnStart; i++)
+        for (int i = 0; i < numPiecesToGenerateOnStart; i++)
         {
             AddNewPiece();
         }
@@ -49,7 +49,7 @@ public class ScenarioGenerator : MonoBehaviour
     {
         GameObject piecesToInstantiate = piecesPrefabs[Random.Range(0, piecesPrefabs.Length)];
         GameObject newPiece = Instantiate(piecesToInstantiate, nextPiecePosition.position, nextPiecePosition.rotation, transform);
-        nextPiecePosition = newPiece.GetComponentInChildren<NextPiece>().transform;
+        nextPiecePosition = newPiece.GetComponentInChildren<NextPiecePosition>().transform;
     }
 
     void DestroyOldestPiece()
@@ -58,3 +58,5 @@ public class ScenarioGenerator : MonoBehaviour
         Destroy(oldestPiece);
     }
 }
+
+

@@ -5,6 +5,8 @@ TagManager:
   serializedVersion: 3
   tags:
   - Breakable
+  - ScenarioPieceEnd
+  - Enemy
   layers:
   - Default
   - TransparentFX
