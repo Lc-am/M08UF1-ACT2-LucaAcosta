@@ -2,6 +2,7 @@ using DG.Tweening;
 using UnityEngine;
 using UnityEngine.InputSystem;
 using static UnityEngine.InputSystem.InputAction;
+using UnityEngine.SceneManagement;
 
 public class PlayerController : MonoBehaviour
 {
@@ -23,23 +24,36 @@ public class PlayerController : MonoBehaviour
     [SerializeField] InputActionReference smash;
     [SerializeField] HitCollider hitColliderSmash;
 
+    [Header("Muerte")]
+    [SerializeField] public int lives = 3; 
+    [SerializeField] private float hitForwardVelocity = -5f; 
+    [SerializeField] private float hitVerticalVelocity = 2f; // Velocidad de salto al recibir daño
+    private bool isInvulnerable = false;
+
     float forwardVelocity = 0f;
     float verticalVelocity = 0f;
     float gravity = -9.8f;
 
     CharacterController characterController;
-    
+
     private int triggersTouched = 0;
 
     private Animator animator;
+
+    HurtCollider hurtCollider;
+
+    [SerializeField] float timerInvulnerable = 3;
 
     private void Awake()
     {
         characterController = GetComponent<CharacterController>();
         animator = GetComponent<Animator>();
+        hurtCollider = GetComponent<HurtCollider>();
     }
     private void OnEnable()
     {
+        hurtCollider.onHitReceived.AddListener(OnHitReceived);
+
         punch.action.Enable();
         punch.action.performed += OnPunch;
 
@@ -51,28 +65,40 @@ public class PlayerController : MonoBehaviour
     }
     private void Update()
     {
-        if(forwardVelocity < minForwardVelocity)
+        if (forwardVelocity < minForwardVelocity)
         {
             forwardVelocity += forwardAcceleration * Time.deltaTime;
         }
 
         if (forwardVelocity > maxForwardVelocity)
-        { 
-            forwardVelocity = maxForwardVelocity; 
+        {
+            forwardVelocity = maxForwardVelocity;
         }
 
         characterController.Move((Vector3.forward * forwardVelocity + Vector3.up * verticalVelocity) * Time.deltaTime);
 
-        if(characterController.isGrounded)
+        if (characterController.isGrounded)
         {
             verticalVelocity = verticalVelocityOnGrounded;
         }
 
         verticalVelocity += gravity * Time.deltaTime;
+
+        if (isInvulnerable)
+        {
+           timerInvulnerable -= Time.deltaTime;
+
+            if(timerInvulnerable < 0)
+            {
+                isInvulnerable = false;
+            }
+        }
     }
 
     private void OnDisable()
     {
+        hurtCollider.onHitReceived.RemoveListener(OnHitReceived);
+
         punch.action.Disable();
         punch.action.performed -= OnPunch;
 
@@ -96,11 +122,11 @@ public class PlayerController : MonoBehaviour
     {
 
         if (characterController.isGrounded)
-        {  
+        {
             animator.SetTrigger("Uppercut");
             hitColliderUppercut.gameObject.SetActive(true);
             forwardVelocity *= forwardVelocityDecrement;
-            verticalVelocity = 1f; // Velocida positiva pero no me hace nada, no se hace la accion de subir un poco
+            verticalVelocity = 3f;  
             DOVirtual.DelayedCall(0.5f,
                 () => hitColliderUppercut.gameObject.SetActive(false));
         }
@@ -108,12 +134,12 @@ public class PlayerController : MonoBehaviour
 
     private void OnSmash(InputAction.CallbackContext callbackContext)
     {
-        if(!characterController.isGrounded)
+        if (!characterController.isGrounded)
         {
             animator.SetTrigger("Smash");
             hitColliderSmash.gameObject.SetActive(true);
             forwardVelocity *= forwardVelocityDecrement;
-            verticalVelocity = 1f; // Velocida positiva pero no me hace nada, no se hace la accion de subir un poco
+            verticalVelocity = -4f; 
             DOVirtual.DelayedCall(0.5f,
                 () => hitColliderSmash.gameObject.SetActive(false));
         }
@@ -122,16 +148,48 @@ public class PlayerController : MonoBehaviour
     // Para generacion de mapa
     private void OnTriggerEnter(Collider other)
     {
-        if(other.CompareTag("ScenarioPieceEnd"))
+        if (other.CompareTag("ScenarioPieceEnd"))
         {
             triggersTouched++;
 
             if (triggersTouched == 2)
             {
-                ScenarioGenerator scenarioGenerator = ScenarioGenerator.instance;
-                scenarioGenerator.EndOfPieceReached();
+                ScenarioGenerator.instance.EndOfPieceReached();
                 triggersTouched = 0;
             }
         }
+    }
+
+    ////Nuevo
+    private void OnHitReceived(HitCollider hit, HurtCollider hurt)
+    {   
+        if(isInvulnerable)
+        {
+            return;
+        }
+        
+        
+        if(lives != 0)
+        {
+            lives--;
+            verticalVelocity = 3;
+            forwardVelocity = -2;
+
+            isInvulnerable = true;
+
+            Debug.Log(lives);
+        }
+        else
+        {
+            forwardVelocity = 0;
+            isInvulnerable = true;
+            animator.SetTrigger("IsDead");
+            DOVirtual.DelayedCall(5f, RestartScene);
+        }
+    }
+
+    private void RestartScene()
+    {
+        SceneManager.LoadScene(SceneManager.GetActiveScene().name);
     }
 }
