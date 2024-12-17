@@ -3,6 +3,7 @@ using UnityEngine;
 using UnityEngine.InputSystem;
 using static UnityEngine.InputSystem.InputAction;
 using UnityEngine.SceneManagement;
+using DG.Tweening.Core.Easing;
 
 public class PlayerController : MonoBehaviour
 {
@@ -26,8 +27,6 @@ public class PlayerController : MonoBehaviour
 
     [Header("Muerte")]
     [SerializeField] public int lives = 3; 
-    [SerializeField] private float hitForwardVelocity = -5f; 
-    [SerializeField] private float hitVerticalVelocity = 2f; // Velocidad de salto al recibir daño
     private bool isInvulnerable = false;
 
     float forwardVelocity = 0f;
@@ -43,6 +42,8 @@ public class PlayerController : MonoBehaviour
     HurtCollider hurtCollider;
 
     [SerializeField] float timerInvulnerable = 3;
+
+    [SerializeField] GameManager gameManager;
 
     private void Awake()
     {
@@ -167,15 +168,16 @@ public class PlayerController : MonoBehaviour
         {
             return;
         }
-        
-        
-        if(lives != 0)
+
+        if (lives > 1)
         {
             lives--;
             verticalVelocity = 3;
             forwardVelocity = -2;
 
             isInvulnerable = true;
+
+            DisableControlsTemporarily(1f);
 
             Debug.Log(lives);
         }
@@ -184,12 +186,34 @@ public class PlayerController : MonoBehaviour
             forwardVelocity = 0;
             isInvulnerable = true;
             animator.SetTrigger("IsDead");
-            DOVirtual.DelayedCall(5f, RestartScene);
+
+            DOTween.KillAll();
+
+            gameManager.PlayerDied();
+
+            //DOVirtual.DelayedCall(5f, RestartScene);
         }
     }
 
-    private void RestartScene()
+    //private void RestartScene()
+    //{
+    //    DOTween.KillAll();
+
+    //    SceneManager.LoadScene(SceneManager.GetActiveScene().name);
+    //}
+
+    private void DisableControlsTemporarily(float duration)
     {
-        SceneManager.LoadScene(SceneManager.GetActiveScene().name);
+
+        punch.action.Disable();
+        uppercut.action.Disable();
+        smash.action.Disable();
+
+        DOVirtual.DelayedCall(duration, () =>
+        {
+            punch.action.Enable();
+            uppercut.action.Enable();
+            smash.action.Enable();
+        });
     }
 }

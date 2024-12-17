@@ -59,6 +59,7 @@ public class GroundEnemyController : MonoBehaviour
     private void OnDisable()
     {
         hurtCollider.onHitReceived.RemoveListener(GetHurt);
+        DOTween.Kill(this);
     }
 
     private void GetHurt(HitCollider hit, HurtCollider hurt)
