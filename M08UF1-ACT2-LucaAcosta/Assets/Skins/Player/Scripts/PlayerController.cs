@@ -45,6 +45,8 @@ public class PlayerController : MonoBehaviour
 
     [SerializeField] GameManager gameManager;
 
+    [SerializeField] InputActionReference slideAction;
+
     private void Awake()
     {
         characterController = GetComponent<CharacterController>();
@@ -63,7 +65,11 @@ public class PlayerController : MonoBehaviour
 
         smash.action.Enable();
         smash.action.performed += OnSmash;
+
+        slideAction.action.Enable();
+        slideAction.action.performed += OnSlidePerformed;
     }
+    
     private void Update()
     {
         if (forwardVelocity < minForwardVelocity)
@@ -108,6 +114,24 @@ public class PlayerController : MonoBehaviour
 
         smash.action.Disable();
         smash.action.performed -= OnSmash;
+
+        slideAction.action.Disable();
+        slideAction.action.performed -= OnSlidePerformed;
+    }
+    private void OnSlidePerformed(InputAction.CallbackContext context)
+    {
+        Vector2 slideDelta = context.ReadValue<Vector2>();
+
+        if (slideDelta.y > 0.5f)
+        {
+            Debug.Log("Slide Up detected!");
+            OnUppercut(new InputAction.CallbackContext());
+        }
+        else if (slideDelta.y < -0.5f)
+        {
+            Debug.Log("Slide Down detected!");
+            OnSmash(new InputAction.CallbackContext());
+        }
     }
 
     private void OnPunch(InputAction.CallbackContext callbackContext)
@@ -127,7 +151,7 @@ public class PlayerController : MonoBehaviour
             animator.SetTrigger("Uppercut");
             hitColliderUppercut.gameObject.SetActive(true);
             forwardVelocity *= forwardVelocityDecrement;
-            verticalVelocity = 3f;  
+            verticalVelocity = 5f;  
             DOVirtual.DelayedCall(0.5f,
                 () => hitColliderUppercut.gameObject.SetActive(false));
         }
@@ -140,7 +164,7 @@ public class PlayerController : MonoBehaviour
             animator.SetTrigger("Smash");
             hitColliderSmash.gameObject.SetActive(true);
             forwardVelocity *= forwardVelocityDecrement;
-            verticalVelocity = -4f; 
+            verticalVelocity = -8f; 
             DOVirtual.DelayedCall(0.5f,
                 () => hitColliderSmash.gameObject.SetActive(false));
         }
@@ -156,12 +180,13 @@ public class PlayerController : MonoBehaviour
             if (triggersTouched == 2)
             {
                 ScenarioGenerator.instance.EndOfPieceReached();
+                other.gameObject.SetActive(false);  
                 triggersTouched = 0;
             }
         }
     }
 
-    ////Nuevo
+    // Evento del onHitReceived
     private void OnHitReceived(HitCollider hit, HurtCollider hurt)
     {   
         if(isInvulnerable)
@@ -169,7 +194,7 @@ public class PlayerController : MonoBehaviour
             return;
         }
 
-        if (lives > 1)
+        if (lives >= 1)
         {
             lives--;
             verticalVelocity = 3;
@@ -183,11 +208,18 @@ public class PlayerController : MonoBehaviour
         }
         else
         {
-            forwardVelocity = 0;
             isInvulnerable = true;
             animator.SetTrigger("IsDead");
 
-            DOTween.KillAll();
+            verticalVelocity = 250f; // Empuje hacia arriba
+            forwardVelocity = -250f; // Empuje hacia atrás
+
+            // Detener el movimiento después de un tiempo
+            DOVirtual.DelayedCall(4f, () =>
+            {
+                verticalVelocity = 0f;
+                forwardVelocity = 0f;
+            });
 
             gameManager.PlayerDied();
 
@@ -195,13 +227,7 @@ public class PlayerController : MonoBehaviour
         }
     }
 
-    //private void RestartScene()
-    //{
-    //    DOTween.KillAll();
-
-    //    SceneManager.LoadScene(SceneManager.GetActiveScene().name);
-    //}
-
+    // Desactivar los controles al ser golpeados
     private void DisableControlsTemporarily(float duration)
     {
 
@@ -216,4 +242,16 @@ public class PlayerController : MonoBehaviour
             smash.action.Enable();
         });
     }
+
+    // Reinicio de nivel
+    //private void RestartScene()
+    //{
+    //    DOTween.KillAll();
+    //    SceneManager.LoadScene("Ejercicio2");
+    //}
 }
+
+
+
+
+// touchScreen y el delta para hacer el pantalla

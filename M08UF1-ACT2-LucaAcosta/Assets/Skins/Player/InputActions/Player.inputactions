@@ -31,6 +31,15 @@
                     "processors": "",
                     "interactions": "",
                     "initialStateCheck": false
+                },
+                {
+                    "name": "TouchScreen",
+                    "type": "Value",
+                    "id": "5556ccbb-3472-4476-bb36-662d2b33f01c",
+                    "expectedControlType": "Vector2",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": true
                 }
             ],
             "bindings": [
@@ -38,6 +47,17 @@
                     "name": "",
                     "id": "b3be3490-0902-4b70-a56c-6e3c5a0f0c83",
                     "path": "<Mouse>/rightButton",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "Punch",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "ff189965-67f1-451a-b950-0fb505c56168",
+                    "path": "<Touchscreen>/primaryTouch/tap",
                     "interactions": "",
                     "processors": "",
                     "groups": "",
@@ -64,6 +84,17 @@
                     "processors": "",
                     "groups": "",
                     "action": "Smash",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "b769fecf-8b3e-4b84-9525-91dd6394d42c",
+                    "path": "<Touchscreen>/delta",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "TouchScreen",
                     "isComposite": false,
                     "isPartOfComposite": false
                 }

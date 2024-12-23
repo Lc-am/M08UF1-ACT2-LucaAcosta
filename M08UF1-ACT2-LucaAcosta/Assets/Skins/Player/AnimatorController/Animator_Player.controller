@@ -175,7 +175,7 @@ AnimatorState:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_Name: Player_Punching
-  m_Speed: 1
+  m_Speed: 3
   m_CycleOffset: 0
   m_Transitions:
   - {fileID: -8045557325331142984}
@@ -299,7 +299,7 @@ AnimatorState:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_Name: Player_Smash
-  m_Speed: 1
+  m_Speed: 4
   m_CycleOffset: 0
   m_Transitions:
   - {fileID: -7410399549811287326}
@@ -326,7 +326,7 @@ AnimatorState:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_Name: Player_Uppercut
-  m_Speed: 1
+  m_Speed: 2
   m_CycleOffset: 0
   m_Transitions:
   - {fileID: -7810175212943970236}
@@ -359,13 +359,13 @@ AnimatorStateMachine:
     m_Position: {x: 420, y: 70, z: 0}
   - serializedVersion: 1
     m_State: {fileID: -1463232509624076506}
-    m_Position: {x: 70, y: 310, z: 0}
+    m_Position: {x: 190, y: 310, z: 0}
   - serializedVersion: 1
     m_State: {fileID: 1399248489027926102}
-    m_Position: {x: 370, y: 340, z: 0}
+    m_Position: {x: 420, y: 330, z: 0}
   - serializedVersion: 1
     m_State: {fileID: 91638557384128778}
-    m_Position: {x: 640, y: 320, z: 0}
+    m_Position: {x: 650, y: 310, z: 0}
   m_ChildStateMachines: []
   m_AnyStateTransitions: []
   m_EntryTransitions: []
@@ -438,7 +438,7 @@ AnimatorState:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_Name: Player_Death
-  m_Speed: 1
+  m_Speed: 25
   m_CycleOffset: 0
   m_Transitions: []
   m_StateMachineBehaviours: []
